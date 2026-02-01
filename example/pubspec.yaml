@@ -23,6 +23,7 @@ dependencies:
 
   tutorial_coach_mark:
     path: ".."
+  flutter_bloc: ^9.0.0
 
 dev_dependencies:
   flutter_test:

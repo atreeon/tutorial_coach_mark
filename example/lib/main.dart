@@ -3,7 +3,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+
+import 'counter_cubit.dart';
 
 void main() => runApp(const MyApp());
 
@@ -18,7 +21,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
+      home: BlocProvider(
+        create: (_) => CounterCubit(),
+        child: const MyHomePage(),
+      ),
     );
   }
 }
@@ -32,17 +38,29 @@ class MyHomePage extends StatefulWidget {
 
 class MyHomePageState extends State<MyHomePage> {
   late TutorialCoachMark tutorialCoachMark;
+  final TextEditingController _textController = TextEditingController();
 
   GlobalKey keyButton = GlobalKey();
   GlobalKey keyButton1 = GlobalKey();
-  GlobalKey keyButton2 = GlobalKey();
-  GlobalKey keyButton3 = GlobalKey();
-  GlobalKey keyButton4 = GlobalKey();
-  GlobalKey keyButton5 = GlobalKey();
+
+  // GlobalKey keyButton2 = GlobalKey();
+  // GlobalKey keyButton3 = GlobalKey();
+  // GlobalKey keyButton4 = GlobalKey();
+  // GlobalKey keyButton5 = GlobalKey();
+  GlobalKey keyIncrementButton = GlobalKey();
 
   GlobalKey keyBottomNavigation1 = GlobalKey();
-  GlobalKey keyBottomNavigation2 = GlobalKey();
-  GlobalKey keyBottomNavigation3 = GlobalKey();
+
+  // GlobalKey keyBottomNavigation2 = GlobalKey();
+  // GlobalKey keyBottomNavigation3 = GlobalKey();
+  GlobalKey keyToggleTextFieldButton = GlobalKey();
+  GlobalKey keyTextField = GlobalKey();
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -104,62 +122,72 @@ class MyHomePageState extends State<MyHomePage> {
               ),
             ),
             Align(
-              alignment: Alignment.center,
-              child: SizedBox(
-                width: 50,
-                height: 50,
-                child: ElevatedButton(
-                  key: keyButton2,
-                  onPressed: () {},
-                  child: Container(),
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 220.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    BlocBuilder<CounterCubit, CounterState>(
+                      builder: (context, state) {
+                        return Text(
+                          'Count: ${state.count}',
+                          style: const TextStyle(fontSize: 18),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      key: keyIncrementButton,
+                      onPressed: () {
+                        context.read<CounterCubit>().increment();
+                      },
+                      child: const Text('Increment'),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      key: keyToggleTextFieldButton,
+                      onPressed: () {
+                        context
+                            .read<CounterCubit>()
+                            .toggleTextFieldVisibility();
+                      },
+                      child: const Text('Toggle Text Field'),
+                    ),
+                    const SizedBox(height: 12),
+                    BlocBuilder<CounterCubit, CounterState>(
+                      builder: (context, state) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('Value: ${state.textValue}'),
+                            if (!state.isTextFieldHidden) ...[
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                width: 220,
+                                child: TextField(
+                                  key: keyTextField,
+                                  controller: _textController,
+                                  onChanged: (value) {
+                                    context
+                                        .read<CounterCubit>()
+                                        .updateText(value);
+                                  },
+                                  decoration: const InputDecoration(
+                                    labelText: 'Enter text',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.all(50.0),
-                child: SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: ElevatedButton(
-                    key: keyButton3,
-                    onPressed: () {},
-                    child: Container(),
-                  ),
-                ),
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.all(50.0),
-                child: SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: ElevatedButton(
-                    key: keyButton4,
-                    onPressed: () {},
-                    child: Container(),
-                  ),
-                ),
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(50.0),
-                child: SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: ElevatedButton(
-                    key: keyButton5,
-                    onPressed: () {},
-                    child: Container(),
-                  ),
-                ),
-              ),
-            )
           ],
         ),
       ),
@@ -177,23 +205,6 @@ class MyHomePageState extends State<MyHomePage> {
                     width: 40,
                   ),
                 )),
-                Expanded(
-                    child: Center(
-                  child: SizedBox(
-                    key: keyBottomNavigation2,
-                    height: 40,
-                    width: 40,
-                  ),
-                )),
-                Expanded(
-                  child: Center(
-                    child: SizedBox(
-                      key: keyBottomNavigation3,
-                      height: 40,
-                      width: 40,
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -238,11 +249,18 @@ class MyHomePageState extends State<MyHomePage> {
       },
       onClickTarget: (target) {
         print('onClickTarget: $target');
+        if (target.identify == "incrementButton") {
+          context.read<CounterCubit>().increment();
+        }
+        if (target.identify == "toggleTextFieldButton") {
+          Future.delayed(const Duration(milliseconds: 150), () {
+            context.read<CounterCubit>().setTextFieldHidden(true);
+          });
+        }
       },
       onClickTargetWithTapPosition: (target, tapDetails) {
         print("target: $target");
-        print(
-            "clicked at position local: ${tapDetails.localPosition} - global: ${tapDetails.globalPosition}");
+        print("clicked at position local: ${tapDetails.localPosition} - global: ${tapDetails.globalPosition}");
       },
       onClickOverlay: (target) {
         print('onClickOverlay: $target');
@@ -256,6 +274,105 @@ class MyHomePageState extends State<MyHomePage> {
 
   List<TargetFocus> _createTargets() {
     List<TargetFocus> targets = [];
+    targets.add(
+      TargetFocus(
+        identify: "toggleTextFieldButton",
+        keyTarget: keyToggleTextFieldButton,
+        alignSkip: Alignment.topRight,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  "Toggle Text Field",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontSize: 20.0,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 10.0),
+                  child: Text(
+                    "Tap to show or hide the text field.",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+    targets.add(
+      TargetFocus(
+        identify: "textField",
+        keyTarget: keyTextField,
+        alignSkip: Alignment.topRight,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  "Text Field",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontSize: 20.0,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 10.0),
+                  child: Text(
+                    "Enter text here to update the label.",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+    targets.add(
+      TargetFocus(
+        identify: "incrementButton",
+        keyTarget: keyIncrementButton,
+        alignSkip: Alignment.topRight,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  "Increment",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontSize: 20.0,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 10.0),
+                  child: Text(
+                    "This button increases the counter by 1.",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
     targets.add(
       TargetFocus(
         identify: "keyBottomNavigation1",
@@ -286,68 +403,6 @@ class MyHomePageState extends State<MyHomePage> {
 
     targets.add(
       TargetFocus(
-        identify: "keyBottomNavigation2",
-        keyTarget: keyBottomNavigation2,
-        alignSkip: Alignment.topRight,
-        contents: [
-          TargetContent(
-            align: ContentAlign.top,
-            builder: (context, controller) {
-              return const Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    "Titulo lorem ipsum",
-                    style: TextStyle(
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-
-    targets.add(
-      TargetFocus(
-        identify: "keyBottomNavigation3",
-        keyTarget: keyBottomNavigation3,
-        alignSkip: Alignment.topRight,
-        contents: [
-          TargetContent(
-            align: ContentAlign.top,
-            builder: (context, controller) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text(
-                    "Titulo lorem ipsum",
-                    style: TextStyle(
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      tutorialCoachMark.goTo(0);
-                    },
-                    child: const Text('Go to index 0'),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-    targets.add(
-      TargetFocus(
         identify: "Target 0",
         keyTarget: keyButton1,
         contents: [
@@ -360,10 +415,7 @@ class MyHomePageState extends State<MyHomePage> {
                 children: <Widget>[
                   Text(
                     "Titulo lorem ipsum",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 20.0),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 20.0),
                   ),
                   Padding(
                     padding: EdgeInsets.only(top: 10.0),
@@ -420,181 +472,6 @@ class MyHomePageState extends State<MyHomePage> {
         ],
         shape: ShapeLightFocus.RRect,
         radius: 5,
-      ),
-    );
-    targets.add(
-      TargetFocus(
-        identify: "Target 2",
-        keyTarget: keyButton4,
-        contents: [
-          TargetContent(
-            align: ContentAlign.left,
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  "Multiples content",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 20.0),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: 10.0),
-                  child: Text(
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                )
-              ],
-            ),
-          ),
-          TargetContent(
-              align: ContentAlign.top,
-              child: const Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    "Multiples content",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 20.0),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 10.0),
-                    child: Text(
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  )
-                ],
-              ))
-        ],
-        shape: ShapeLightFocus.RRect,
-      ),
-    );
-    targets.add(TargetFocus(
-      identify: "Target 3",
-      keyTarget: keyButton5,
-      contents: [
-        TargetContent(
-            align: ContentAlign.right,
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  "Title lorem ipsum",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 20.0),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: 10.0),
-                  child: Text(
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                )
-              ],
-            ))
-      ],
-      shape: ShapeLightFocus.RRect,
-    ));
-    targets.add(TargetFocus(
-      identify: "Target 4",
-      keyTarget: keyButton3,
-      contents: [
-        TargetContent(
-          align: ContentAlign.top,
-          child: Column(
-            children: <Widget>[
-              InkWell(
-                onTap: () {
-                  tutorialCoachMark.previous();
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Image.network(
-                    "https://juststickers.in/wp-content/uploads/2019/01/flutter.png",
-                    height: 200,
-                  ),
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 20.0),
-                child: Text(
-                  "Image Load network",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20.0),
-                ),
-              ),
-              const Text(
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
-                style: TextStyle(color: Colors.white),
-              ),
-            ],
-          ),
-        ),
-      ],
-      shape: ShapeLightFocus.Circle,
-    ));
-    targets.add(
-      TargetFocus(
-        identify: "Target 5",
-        keyTarget: keyButton2,
-        shape: ShapeLightFocus.Circle,
-        contents: [
-          TargetContent(
-            align: ContentAlign.top,
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.only(bottom: 20.0),
-                  child: Text(
-                    "Multiples contents",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20.0),
-                  ),
-                ),
-                Text(
-                  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ],
-            ),
-          ),
-          TargetContent(
-              align: ContentAlign.bottom,
-              child: const Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 20.0),
-                    child: Text(
-                      "Multiples contents",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20.0),
-                    ),
-                  ),
-                  Text(
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ))
-        ],
       ),
     );
 
