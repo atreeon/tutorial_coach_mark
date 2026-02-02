@@ -121,6 +121,9 @@ class TutorialCoachMark {
   /// Index of the target to focus initially (0-based).
   final int initialFocus;
 
+  /// Duration for content fade animation.
+  final Duration contentAnimationDuration;
+
   /// Internal widget key for controlling the tutorial widget state.
   final GlobalKey<TutorialCoachMarkWidgetState> _widgetKey = GlobalKey();
 
@@ -158,6 +161,7 @@ class TutorialCoachMark {
   /// - [imageFilter]: Image filter effect for background.
   /// - [initialFocus]: Index of initial focus target. Default is 0.
   /// - [backgroundSemanticLabel]: Semantic label for background overlay.
+  /// - [contentAnimationDuration]: Duration of content fade animation.
   /// - [disableBackButton]: Whether to disable device back button. Default is false.
   TutorialCoachMark({
     required this.targets,
@@ -184,6 +188,7 @@ class TutorialCoachMark {
     this.imageFilter,
     this.initialFocus = 0,
     this.backgroundSemanticLabel,
+    this.contentAnimationDuration = const Duration(milliseconds: 300),
     this.disableBackButton = false,
   }) : assert(opacityShadow >= 0 && opacityShadow <= 1);
 

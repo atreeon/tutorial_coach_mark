@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:tutorial_coach_mark_demo/createTargets.dart';
 
 import 'counter_cubit.dart';
 
@@ -40,21 +41,12 @@ class MyHomePageState extends State<MyHomePage> {
   late TutorialCoachMark tutorialCoachMark;
   final TextEditingController _textController = TextEditingController();
 
-  GlobalKey keyButton = GlobalKey();
-  GlobalKey keyButton1 = GlobalKey();
-
-  // GlobalKey keyButton2 = GlobalKey();
-  // GlobalKey keyButton3 = GlobalKey();
-  // GlobalKey keyButton4 = GlobalKey();
-  // GlobalKey keyButton5 = GlobalKey();
-  GlobalKey keyIncrementButton = GlobalKey();
-
-  GlobalKey keyBottomNavigation1 = GlobalKey();
-
-  // GlobalKey keyBottomNavigation2 = GlobalKey();
-  // GlobalKey keyBottomNavigation3 = GlobalKey();
-  GlobalKey keyToggleTextFieldButton = GlobalKey();
-  GlobalKey keyTextField = GlobalKey();
+  var keyButton = GlobalKey();
+  var keyButton1 = GlobalKey();
+  var keyIncrementButton = GlobalKey();
+  var keyBottomNavigation1 = GlobalKey();
+  var keyToggleTextFieldButton = GlobalKey();
+  var keyTextField = GlobalKey();
 
   @override
   void dispose() {
@@ -148,9 +140,7 @@ class MyHomePageState extends State<MyHomePage> {
                     ElevatedButton(
                       key: keyToggleTextFieldButton,
                       onPressed: () {
-                        context
-                            .read<CounterCubit>()
-                            .toggleTextFieldVisibility();
+                        context.read<CounterCubit>().toggleTextFieldVisibility();
                       },
                       child: const Text('Toggle Text Field'),
                     ),
@@ -169,9 +159,7 @@ class MyHomePageState extends State<MyHomePage> {
                                   key: keyTextField,
                                   controller: _textController,
                                   onChanged: (value) {
-                                    context
-                                        .read<CounterCubit>()
-                                        .updateText(value);
+                                    context.read<CounterCubit>().updateText(value);
                                   },
                                   decoration: const InputDecoration(
                                     labelText: 'Enter text',
@@ -238,8 +226,20 @@ class MyHomePageState extends State<MyHomePage> {
 
   void createTutorial() {
     tutorialCoachMark = TutorialCoachMark(
-      targets: _createTargets(),
+      targets: createTargets(
+        keyToggleTextFieldButton: keyToggleTextFieldButton,
+        keyTextField: keyTextField,
+        keyIncrementButton: keyIncrementButton,
+        keyBottomNavigation1: keyBottomNavigation1,
+        keyButton1: keyButton1,
+        keyButton: keyButton,
+      ),
       colorShadow: Colors.red,
+      focusAnimationDuration: Duration.zero,
+      unFocusAnimationDuration: Duration.zero,
+      beforeFocus: (target) async {
+        await Future.delayed(const Duration(milliseconds: 10));
+      },
       textSkip: "SKIP",
       paddingFocus: 10,
       opacityShadow: 0.5,
@@ -247,14 +247,14 @@ class MyHomePageState extends State<MyHomePage> {
       onFinish: () {
         print("finish");
       },
-      onClickTarget: (target) {
+      onClickTarget: (target) async {
         print('onClickTarget: $target');
         if (target.identify == "incrementButton") {
           context.read<CounterCubit>().increment();
         }
         if (target.identify == "toggleTextFieldButton") {
-          Future.delayed(const Duration(milliseconds: 150), () {
-            context.read<CounterCubit>().setTextFieldHidden(true);
+          await Future.delayed(const Duration(milliseconds: 1), () {
+            context.read<CounterCubit>().setTextFieldHidden(false);
           });
         }
       },
@@ -272,209 +272,209 @@ class MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  List<TargetFocus> _createTargets() {
-    List<TargetFocus> targets = [];
-    targets.add(
-      TargetFocus(
-        identify: "toggleTextFieldButton",
-        keyTarget: keyToggleTextFieldButton,
-        alignSkip: Alignment.topRight,
-        contents: [
-          TargetContent(
-            align: ContentAlign.bottom,
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  "Toggle Text Field",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontSize: 20.0,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: 10.0),
-                  child: Text(
-                    "Tap to show or hide the text field.",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-    targets.add(
-      TargetFocus(
-        identify: "textField",
-        keyTarget: keyTextField,
-        alignSkip: Alignment.topRight,
-        contents: [
-          TargetContent(
-            align: ContentAlign.bottom,
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  "Text Field",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontSize: 20.0,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: 10.0),
-                  child: Text(
-                    "Enter text here to update the label.",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-    targets.add(
-      TargetFocus(
-        identify: "incrementButton",
-        keyTarget: keyIncrementButton,
-        alignSkip: Alignment.topRight,
-        contents: [
-          TargetContent(
-            align: ContentAlign.bottom,
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  "Increment",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontSize: 20.0,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: 10.0),
-                  child: Text(
-                    "This button increases the counter by 1.",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-    targets.add(
-      TargetFocus(
-        identify: "keyBottomNavigation1",
-        keyTarget: keyBottomNavigation1,
-        alignSkip: Alignment.topRight,
-        enableOverlayTab: true,
-        contents: [
-          TargetContent(
-            align: ContentAlign.top,
-            builder: (context, controller) {
-              return const Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    "Titulo lorem ipsum",
-                    style: TextStyle(
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-
-    targets.add(
-      TargetFocus(
-        identify: "Target 0",
-        keyTarget: keyButton1,
-        contents: [
-          TargetContent(
-            align: ContentAlign.bottom,
-            builder: (context, controller) {
-              return const Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    "Titulo lorem ipsum",
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 20.0),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 10.0),
-                    child: Text(
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-    targets.add(
-      TargetFocus(
-        identify: "Target 1",
-        keyTarget: keyButton,
-        color: Colors.purple,
-        contents: [
-          TargetContent(
-            align: ContentAlign.bottom,
-            builder: (context, controller) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text(
-                    "Titulo lorem ipsum",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 20.0,
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 10.0),
-                    child: Text(
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      controller.previous();
-                    },
-                    child: const Icon(Icons.chevron_left),
-                  ),
-                ],
-              );
-            },
-          )
-        ],
-        shape: ShapeLightFocus.RRect,
-        radius: 5,
-      ),
-    );
-
-    return targets;
-  }
+// List<TargetFocus> _createTargets() {
+//   List<TargetFocus> targets = [];
+//   targets.add(
+//     TargetFocus(
+//       identify: "toggleTextFieldButton",
+//       keyTarget: keyToggleTextFieldButton,
+//       alignSkip: Alignment.topRight,
+//       contents: [
+//         TargetContent(
+//           align: ContentAlign.bottom,
+//           child: const Column(
+//             mainAxisSize: MainAxisSize.min,
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: <Widget>[
+//               Text(
+//                 "Toggle Text Field",
+//                 style: TextStyle(
+//                   fontWeight: FontWeight.bold,
+//                   color: Colors.white,
+//                   fontSize: 20.0,
+//                 ),
+//               ),
+//               Padding(
+//                 padding: EdgeInsets.only(top: 10.0),
+//                 child: Text(
+//                   "Tap to show or hide the text field.",
+//                   style: TextStyle(color: Colors.white),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ],
+//     ),
+//   );
+//   targets.add(
+//     TargetFocus(
+//       identify: "textField",
+//       keyTarget: keyTextField,
+//       alignSkip: Alignment.topRight,
+//       contents: [
+//         TargetContent(
+//           align: ContentAlign.bottom,
+//           child: const Column(
+//             mainAxisSize: MainAxisSize.min,
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: <Widget>[
+//               Text(
+//                 "Text Field",
+//                 style: TextStyle(
+//                   fontWeight: FontWeight.bold,
+//                   color: Colors.white,
+//                   fontSize: 20.0,
+//                 ),
+//               ),
+//               Padding(
+//                 padding: EdgeInsets.only(top: 10.0),
+//                 child: Text(
+//                   "Enter text here to update the label.",
+//                   style: TextStyle(color: Colors.white),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ],
+//     ),
+//   );
+//   targets.add(
+//     TargetFocus(
+//       identify: "incrementButton",
+//       keyTarget: keyIncrementButton,
+//       alignSkip: Alignment.topRight,
+//       contents: [
+//         TargetContent(
+//           align: ContentAlign.bottom,
+//           child: const Column(
+//             mainAxisSize: MainAxisSize.min,
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: <Widget>[
+//               Text(
+//                 "Increment",
+//                 style: TextStyle(
+//                   fontWeight: FontWeight.bold,
+//                   color: Colors.white,
+//                   fontSize: 20.0,
+//                 ),
+//               ),
+//               Padding(
+//                 padding: EdgeInsets.only(top: 10.0),
+//                 child: Text(
+//                   "This button increases the counter by 1.",
+//                   style: TextStyle(color: Colors.white),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ],
+//     ),
+//   );
+//   targets.add(
+//     TargetFocus(
+//       identify: "keyBottomNavigation1",
+//       keyTarget: keyBottomNavigation1,
+//       alignSkip: Alignment.topRight,
+//       enableOverlayTab: true,
+//       contents: [
+//         TargetContent(
+//           align: ContentAlign.top,
+//           builder: (context, controller) {
+//             return const Column(
+//               mainAxisSize: MainAxisSize.min,
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: <Widget>[
+//                 Text(
+//                   "Titulo lorem ipsum",
+//                   style: TextStyle(
+//                     color: Colors.white,
+//                   ),
+//                 ),
+//               ],
+//             );
+//           },
+//         ),
+//       ],
+//     ),
+//   );
+//
+//   targets.add(
+//     TargetFocus(
+//       identify: "Target 0",
+//       keyTarget: keyButton1,
+//       contents: [
+//         TargetContent(
+//           align: ContentAlign.bottom,
+//           builder: (context, controller) {
+//             return const Column(
+//               mainAxisSize: MainAxisSize.min,
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: <Widget>[
+//                 Text(
+//                   "Titulo lorem ipsum",
+//                   style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 20.0),
+//                 ),
+//                 Padding(
+//                   padding: EdgeInsets.only(top: 10.0),
+//                   child: Text(
+//                     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
+//                     style: TextStyle(color: Colors.white),
+//                   ),
+//                 ),
+//               ],
+//             );
+//           },
+//         ),
+//       ],
+//     ),
+//   );
+//   targets.add(
+//     TargetFocus(
+//       identify: "Target 1",
+//       keyTarget: keyButton,
+//       color: Colors.purple,
+//       contents: [
+//         TargetContent(
+//           align: ContentAlign.bottom,
+//           builder: (context, controller) {
+//             return Column(
+//               mainAxisSize: MainAxisSize.min,
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: <Widget>[
+//                 const Text(
+//                   "Titulo lorem ipsum",
+//                   style: TextStyle(
+//                     fontWeight: FontWeight.bold,
+//                     color: Colors.white,
+//                     fontSize: 20.0,
+//                   ),
+//                 ),
+//                 const Padding(
+//                   padding: EdgeInsets.only(top: 10.0),
+//                   child: Text(
+//                     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
+//                     style: TextStyle(color: Colors.white),
+//                   ),
+//                 ),
+//                 ElevatedButton(
+//                   onPressed: () {
+//                     controller.previous();
+//                   },
+//                   child: const Icon(Icons.chevron_left),
+//                 ),
+//               ],
+//             );
+//           },
+//         )
+//       ],
+//       shape: ShapeLightFocus.RRect,
+//       radius: 5,
+//     ),
+//   );
+//
+//   return targets;
+// }
 }

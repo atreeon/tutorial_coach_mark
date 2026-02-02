@@ -43,8 +43,7 @@ class TutorialCoachMarkWidget extends StatefulWidget {
   final List<TargetFocus> targets;
   final FutureOr<void> Function(TargetFocus)? beforeFocus;
   final FutureOr Function(TargetFocus)? clickTarget;
-  final FutureOr Function(TargetFocus, TapDownDetails)?
-      onClickTargetWithTapPosition;
+  final FutureOr Function(TargetFocus, TapDownDetails)? onClickTargetWithTapPosition;
   final FutureOr Function(TargetFocus)? clickOverlay;
   final void Function()? finish;
   final Color colorShadow;
@@ -72,9 +71,7 @@ class TutorialCoachMarkWidget extends StatefulWidget {
   TutorialCoachMarkWidgetState createState() => TutorialCoachMarkWidgetState();
 }
 
-class TutorialCoachMarkWidgetState extends State<TutorialCoachMarkWidget>
-    with WidgetsBindingObserver
-    implements TutorialCoachMarkController {
+class TutorialCoachMarkWidgetState extends State<TutorialCoachMarkWidget> with WidgetsBindingObserver implements TutorialCoachMarkController {
   final GlobalKey<AnimatedFocusLightState> _focusLightKey = GlobalKey();
   bool showContent = false;
   TargetFocus? currentTarget;
@@ -130,8 +127,7 @@ class TutorialCoachMarkWidgetState extends State<TutorialCoachMarkWidget>
               return widget.clickTarget?.call(target);
             },
             clickTargetWithTapPosition: (target, tapDetails) {
-              return widget.onClickTargetWithTapPosition
-                  ?.call(target, tapDetails);
+              return widget.onClickTargetWithTapPosition?.call(target, tapDetails);
             },
             clickOverlay: (target) {
               return widget.clickOverlay?.call(target);
@@ -197,9 +193,7 @@ class TutorialCoachMarkWidgetState extends State<TutorialCoachMarkWidget>
     double haloHeight;
 
     if (currentTarget!.shape == ShapeLightFocus.Circle) {
-      haloWidth = target.size.width > target.size.height
-          ? target.size.width
-          : target.size.height;
+      haloWidth = target.size.width > target.size.height ? target.size.width : target.size.height;
       haloHeight = haloWidth;
     } else {
       haloWidth = target.size.width;
@@ -271,8 +265,7 @@ class TutorialCoachMarkWidgetState extends State<TutorialCoachMarkWidget>
           width: width,
           child: Padding(
             padding: i.padding,
-            child: i.builder?.call(context, this) ??
-                (i.child ?? const SizedBox.shrink()),
+            child: i.builder?.call(context, this) ?? (i.child ?? const SizedBox.shrink()),
           ),
         ),
       );
@@ -311,19 +304,19 @@ class TutorialCoachMarkWidgetState extends State<TutorialCoachMarkWidget>
           duration: Durations.medium2,
           child: widget.skipWidget != null
               ? InkWell(
-            onTap: skip,
-            child: widget.skipWidget,
-          )
+                  onTap: skip,
+                  child: widget.skipWidget,
+                )
               : InkWell(
-            onTap: skip,
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Text(
-                widget.textSkip,
-                style: widget.textStyleSkip,
-              ),
-            ),
-          ),
+                  onTap: skip,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Text(
+                      widget.textSkip,
+                      style: widget.textStyleSkip,
+                    ),
+                  ),
+                ),
         ),
       ),
     );
