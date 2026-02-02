@@ -77,6 +77,7 @@ class TutorialCoachMarkWidgetState extends State<TutorialCoachMarkWidget> with W
   final GlobalKey<AnimatedFocusLightState> _focusLightKey = GlobalKey();
   bool showContent = false;
   TargetFocus? currentTarget;
+  bool _waitingForFocus = false;
 
   @override
   void initState() {
@@ -108,46 +109,78 @@ class TutorialCoachMarkWidgetState extends State<TutorialCoachMarkWidget> with W
       type: MaterialType.transparency,
       child: Stack(
         children: <Widget>[
-          AnimatedFocusLight(
-            key: _focusLightKey,
-            initialFocus: widget.initialFocus,
-            targets: widget.targets,
-            finish: widget.finish,
-            paddingFocus: widget.paddingFocus,
-            beforeFocus: widget.beforeFocus,
-            colorShadow: widget.colorShadow,
-            opacityShadow: widget.opacityShadow,
-            focusAnimationDuration: widget.focusAnimationDuration,
-            unFocusAnimationDuration: widget.unFocusAnimationDuration,
-            pulseAnimationDuration: widget.pulseAnimationDuration,
-            pulseVariation: widget.pulseVariation,
-            pulseEnable: widget.pulseEnable,
-            rootOverlay: widget.rootOverlay,
-            imageFilter: widget.imageFilter,
-            backgroundSemanticLabel: widget.backgroundSemanticLabel,
-            clickTarget: (target) {
-              return widget.clickTarget?.call(target);
-            },
-            clickTargetWithTapPosition: (target, tapDetails) {
-              return widget.onClickTargetWithTapPosition?.call(target, tapDetails);
-            },
-            clickOverlay: (target) {
-              return widget.clickOverlay?.call(target);
-            },
-            focus: (target) {
-              setState(() {
-                currentTarget = target;
-                showContent = true;
-              });
-            },
-            removeFocus: () {
-              setState(() {
-                showContent = false;
-              });
-            },
+          Opacity(
+            opacity: _waitingForFocus ? 0 : 1,
+            child: AnimatedFocusLight(
+              key: _focusLightKey,
+              initialFocus: widget.initialFocus,
+              targets: widget.targets,
+              finish: widget.finish,
+              paddingFocus: widget.paddingFocus,
+              beforeFocus: (target) async {
+                if (widget.beforeFocus == null) {
+                  return;
+                }
+                safeSetState(() {
+                  _waitingForFocus = true;
+                });
+                try {
+                  await widget.beforeFocus!(target);
+                } finally {
+                  safeSetState(() {
+                    _waitingForFocus = false;
+                  });
+                }
+              },
+              colorShadow: widget.colorShadow,
+              opacityShadow: widget.opacityShadow,
+              focusAnimationDuration: widget.focusAnimationDuration,
+              unFocusAnimationDuration: widget.unFocusAnimationDuration,
+              pulseAnimationDuration: widget.pulseAnimationDuration,
+              pulseVariation: widget.pulseVariation,
+              pulseEnable: widget.pulseEnable,
+              rootOverlay: widget.rootOverlay,
+              imageFilter: widget.imageFilter,
+              backgroundSemanticLabel: widget.backgroundSemanticLabel,
+              clickTarget: (target) {
+                return widget.clickTarget?.call(target);
+              },
+              clickTargetWithTapPosition: (target, tapDetails) {
+                return widget.onClickTargetWithTapPosition?.call(target, tapDetails);
+              },
+              clickOverlay: (target) {
+                return widget.clickOverlay?.call(target);
+              },
+              focus: (target) {
+                setState(() {
+                  currentTarget = target;
+                  showContent = true;
+                });
+              },
+              removeFocus: () {
+                setState(() {
+                  showContent = false;
+                });
+              },
+            ),
           ),
+          if (_waitingForFocus)
+            IgnorePointer(
+              child: widget.imageFilter != null
+                  ? ClipRect(
+                      child: BackdropFilter(
+                        filter: widget.imageFilter!,
+                        child: Container(
+                          color: widget.colorShadow.withOpacity(widget.opacityShadow),
+                        ),
+                      ),
+                    )
+                  : Container(
+                      color: widget.colorShadow.withOpacity(widget.opacityShadow),
+                    ),
+            ),
           AnimatedOpacity(
-            opacity: showContent ? 1 : 0,
+            opacity: _waitingForFocus ? 0 : (showContent ? 1 : 0),
             duration: widget.contentAnimationDuration,
             child: _buildContents(),
           ),
