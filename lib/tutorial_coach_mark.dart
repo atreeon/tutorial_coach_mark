@@ -222,6 +222,7 @@ class TutorialCoachMark {
           imageFilter: imageFilter,
           initialFocus: initialFocus,
           backgroundSemanticLabel: backgroundSemanticLabel,
+          contentAnimationDuration: contentAnimationDuration,
         );
       },
     );

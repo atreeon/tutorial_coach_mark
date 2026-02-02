@@ -61,6 +61,21 @@ class MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
+  Future<void> _waitForKey(
+    GlobalKey key, {
+    Duration timeout = const Duration(seconds: 2),
+  }) async {
+    final endTime = DateTime.now().add(timeout);
+    while (mounted && DateTime.now().isBefore(endTime)) {
+      final context = key.currentContext;
+      final renderObject = context?.findRenderObject();
+      if (renderObject is RenderBox && renderObject.attached && renderObject.hasSize) {
+        return;
+      }
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -237,15 +252,12 @@ class MyHomePageState extends State<MyHomePage> {
       colorShadow: Colors.red,
       focusAnimationDuration: Duration.zero,
       unFocusAnimationDuration: Duration.zero,
+      contentAnimationDuration: Duration.zero,
       beforeFocus: (target) async {
-        await Future.delayed(const Duration(milliseconds: 10));
-      },
-      textSkip: "SKIP",
-      paddingFocus: 10,
-      opacityShadow: 0.5,
-      imageFilter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-      onFinish: () {
-        print("finish");
+        await Future.delayed(const Duration(milliseconds: 300));
+        if (target.identify == "textField") {
+          await _waitForKey(keyTextField);
+        }
       },
       onClickTarget: (target) async {
         print('onClickTarget: $target');
@@ -253,10 +265,15 @@ class MyHomePageState extends State<MyHomePage> {
           context.read<CounterCubit>().increment();
         }
         if (target.identify == "toggleTextFieldButton") {
-          await Future.delayed(const Duration(milliseconds: 1), () {
-            context.read<CounterCubit>().setTextFieldHidden(false);
-          });
+          context.read<CounterCubit>().setTextFieldHidden(false);
         }
+      },
+      textSkip: "SKIP",
+      paddingFocus: 10,
+      opacityShadow: 0.5,
+      imageFilter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+      onFinish: () {
+        print("finish");
       },
       onClickTargetWithTapPosition: (target, tapDetails) {
         print("target: $target");
@@ -272,209 +289,4 @@ class MyHomePageState extends State<MyHomePage> {
     );
   }
 
-// List<TargetFocus> _createTargets() {
-//   List<TargetFocus> targets = [];
-//   targets.add(
-//     TargetFocus(
-//       identify: "toggleTextFieldButton",
-//       keyTarget: keyToggleTextFieldButton,
-//       alignSkip: Alignment.topRight,
-//       contents: [
-//         TargetContent(
-//           align: ContentAlign.bottom,
-//           child: const Column(
-//             mainAxisSize: MainAxisSize.min,
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: <Widget>[
-//               Text(
-//                 "Toggle Text Field",
-//                 style: TextStyle(
-//                   fontWeight: FontWeight.bold,
-//                   color: Colors.white,
-//                   fontSize: 20.0,
-//                 ),
-//               ),
-//               Padding(
-//                 padding: EdgeInsets.only(top: 10.0),
-//                 child: Text(
-//                   "Tap to show or hide the text field.",
-//                   style: TextStyle(color: Colors.white),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ],
-//     ),
-//   );
-//   targets.add(
-//     TargetFocus(
-//       identify: "textField",
-//       keyTarget: keyTextField,
-//       alignSkip: Alignment.topRight,
-//       contents: [
-//         TargetContent(
-//           align: ContentAlign.bottom,
-//           child: const Column(
-//             mainAxisSize: MainAxisSize.min,
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: <Widget>[
-//               Text(
-//                 "Text Field",
-//                 style: TextStyle(
-//                   fontWeight: FontWeight.bold,
-//                   color: Colors.white,
-//                   fontSize: 20.0,
-//                 ),
-//               ),
-//               Padding(
-//                 padding: EdgeInsets.only(top: 10.0),
-//                 child: Text(
-//                   "Enter text here to update the label.",
-//                   style: TextStyle(color: Colors.white),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ],
-//     ),
-//   );
-//   targets.add(
-//     TargetFocus(
-//       identify: "incrementButton",
-//       keyTarget: keyIncrementButton,
-//       alignSkip: Alignment.topRight,
-//       contents: [
-//         TargetContent(
-//           align: ContentAlign.bottom,
-//           child: const Column(
-//             mainAxisSize: MainAxisSize.min,
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: <Widget>[
-//               Text(
-//                 "Increment",
-//                 style: TextStyle(
-//                   fontWeight: FontWeight.bold,
-//                   color: Colors.white,
-//                   fontSize: 20.0,
-//                 ),
-//               ),
-//               Padding(
-//                 padding: EdgeInsets.only(top: 10.0),
-//                 child: Text(
-//                   "This button increases the counter by 1.",
-//                   style: TextStyle(color: Colors.white),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ],
-//     ),
-//   );
-//   targets.add(
-//     TargetFocus(
-//       identify: "keyBottomNavigation1",
-//       keyTarget: keyBottomNavigation1,
-//       alignSkip: Alignment.topRight,
-//       enableOverlayTab: true,
-//       contents: [
-//         TargetContent(
-//           align: ContentAlign.top,
-//           builder: (context, controller) {
-//             return const Column(
-//               mainAxisSize: MainAxisSize.min,
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: <Widget>[
-//                 Text(
-//                   "Titulo lorem ipsum",
-//                   style: TextStyle(
-//                     color: Colors.white,
-//                   ),
-//                 ),
-//               ],
-//             );
-//           },
-//         ),
-//       ],
-//     ),
-//   );
-//
-//   targets.add(
-//     TargetFocus(
-//       identify: "Target 0",
-//       keyTarget: keyButton1,
-//       contents: [
-//         TargetContent(
-//           align: ContentAlign.bottom,
-//           builder: (context, controller) {
-//             return const Column(
-//               mainAxisSize: MainAxisSize.min,
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: <Widget>[
-//                 Text(
-//                   "Titulo lorem ipsum",
-//                   style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 20.0),
-//                 ),
-//                 Padding(
-//                   padding: EdgeInsets.only(top: 10.0),
-//                   child: Text(
-//                     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
-//                     style: TextStyle(color: Colors.white),
-//                   ),
-//                 ),
-//               ],
-//             );
-//           },
-//         ),
-//       ],
-//     ),
-//   );
-//   targets.add(
-//     TargetFocus(
-//       identify: "Target 1",
-//       keyTarget: keyButton,
-//       color: Colors.purple,
-//       contents: [
-//         TargetContent(
-//           align: ContentAlign.bottom,
-//           builder: (context, controller) {
-//             return Column(
-//               mainAxisSize: MainAxisSize.min,
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: <Widget>[
-//                 const Text(
-//                   "Titulo lorem ipsum",
-//                   style: TextStyle(
-//                     fontWeight: FontWeight.bold,
-//                     color: Colors.white,
-//                     fontSize: 20.0,
-//                   ),
-//                 ),
-//                 const Padding(
-//                   padding: EdgeInsets.only(top: 10.0),
-//                   child: Text(
-//                     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
-//                     style: TextStyle(color: Colors.white),
-//                   ),
-//                 ),
-//                 ElevatedButton(
-//                   onPressed: () {
-//                     controller.previous();
-//                   },
-//                   child: const Icon(Icons.chevron_left),
-//                 ),
-//               ],
-//             );
-//           },
-//         )
-//       ],
-//       shape: ShapeLightFocus.RRect,
-//       radius: 5,
-//     ),
-//   );
-//
-//   return targets;
-// }
 }

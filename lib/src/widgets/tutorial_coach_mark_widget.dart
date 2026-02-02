@@ -37,6 +37,7 @@ class TutorialCoachMarkWidget extends StatefulWidget {
     this.imageFilter,
     this.backgroundSemanticLabel,
     this.initialFocus = 0,
+    this.contentAnimationDuration = const Duration(milliseconds: 300),
   })  : assert(targets.length > 0),
         super(key: key);
 
@@ -66,6 +67,7 @@ class TutorialCoachMarkWidget extends StatefulWidget {
   final ImageFilter? imageFilter;
   final int initialFocus;
   final String? backgroundSemanticLabel;
+  final Duration contentAnimationDuration;
 
   @override
   TutorialCoachMarkWidgetState createState() => TutorialCoachMarkWidgetState();
@@ -146,7 +148,7 @@ class TutorialCoachMarkWidgetState extends State<TutorialCoachMarkWidget> with W
           ),
           AnimatedOpacity(
             opacity: showContent ? 1 : 0,
-            duration: const Duration(milliseconds: 300),
+            duration: widget.contentAnimationDuration,
             child: _buildContents(),
           ),
           _buildSkip()
